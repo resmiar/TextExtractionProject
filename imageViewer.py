@@ -55,7 +55,7 @@ class ImageViewer(Frame):
             self.canvas.yview_scroll(-1, 'units')
 
         # expand rectangle as you drag the mouse if image available in canvas
-        if not self.rect and self.master.is_image_selected:
+        if self.master.is_image_selected:
             self.canvas.coords(self.rect, self.start_x, self.start_y, self.end_x, self.end_y)
 
     def on_button_release(self, event):
@@ -113,9 +113,6 @@ class ImageViewer(Frame):
     def clear_canvas(self):
         self.canvas.delete("all")
         self.master.rectangle_coordinates.clear()
-        self.master.filename = ""
-        self.master.original_image = None
-        self.master.processed_image = None
         self.master.is_image_selected = False
 
 
