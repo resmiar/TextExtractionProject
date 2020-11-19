@@ -8,25 +8,22 @@ def get_text(image_path, coordinates):
     # cropping image img = image[y0:y1, x0:x1]
     image_ROI = image[coordinates[0][1]:coordinates[1][1], coordinates[0][0]:coordinates[1][0]]
 
-    # pytesseract image to string to get results
-    text = str(pytesseract.image_to_string(image_ROI, config='--psm 6'))
+    # pre-processing the image
+    gray = cv2.cvtColor(image_ROI, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (3,3), 0)
+    thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 
+    # Morph open to remove noise and invert image
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+    opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=1)
+    invert = 255 - opening
+
+    # Perform text extraction
+    text = pytesseract.image_to_string(invert, lang='eng', config='--psm 6')
     return text
 
 
 def process_image(image_path, selection_set):
-
-    im = cv2.imread(image_path)
-    ret,im = cv2.threshold(im,120,255,cv2.THRESH_BINARY)
-
-    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-    blur = cv2.GaussianBlur(gray, (9, 9), 0)
-    thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 30)
-
-    # Dilate to combine adjacent text contours
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
-    dilate = cv2.dilate(thresh, kernel, iterations=4)
-
     tags_list = dict()
 
     for selection in selection_set.keys():

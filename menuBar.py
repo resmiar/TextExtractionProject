@@ -22,7 +22,9 @@ class MenuBar(Frame):
         self.clear_button.pack()
 
     def new_button_released(self, event):
+        self.master.image_viewer.clear_canvas()
         if self.winfo_containing(event.x_root, event.y_root) == self.new_button:
+
             filename = filedialog.askopenfilename()
             image = cv2.imread(filename)
 

@@ -1,4 +1,4 @@
-from tkinter import Frame, Canvas, CENTER, ROUND, commondialog
+from tkinter import Frame, Canvas, CENTER, ROUND, commondialog, simpledialog, Label, Listbox, Button
 from PIL import Image, ImageTk
 import cv2
 import PySimpleGUI as gui
@@ -15,6 +15,7 @@ class ImageViewer(Frame):
         self.ratio = 0
         self.rect = None
         self.rectangles = dict()
+        self.draw = False
 
         self.start_x = None
         self.start_y = None
@@ -34,13 +35,14 @@ class ImageViewer(Frame):
         self.start_y = self.canvas.canvasy(event.y)
         self.rect = None
 
-        # create rectangle if not yet exist
-        if not self.rect:
+        # create rectangle if not exists
+        if not self.rect and self.master.is_image_selected:
             self.rect = self.canvas.create_rectangle(self.x, self.y, 1, 1, outline='red')
 
     def on_move_press(self, event):
         self.end_x = self.canvas.canvasx(event.x)
         self.end_y = self.canvas.canvasy(event.y)
+        self.draw = True
 
         w, h = self.canvas.winfo_width(), self.canvas.winfo_height()
         if event.x > 0.9*w:
@@ -52,22 +54,25 @@ class ImageViewer(Frame):
         elif event.y < 0.1*h:
             self.canvas.yview_scroll(-1, 'units')
 
-        # expand rectangle as you drag the mouse
-        self.canvas.coords(self.rect, self.start_x, self.start_y, self.end_x, self.end_y)
+        # expand rectangle as you drag the mouse if image available in canvas
+        if not self.rect and self.master.is_image_selected:
+            self.canvas.coords(self.rect, self.start_x, self.start_y, self.end_x, self.end_y)
 
     def on_button_release(self, event):
-        event, values = show_popup()
-        if event == 'Ok':
-            selected_tag = str(values["LB"][0])
-            if selected_tag in self.rectangles.keys():
-                self.canvas.delete(self.rectangles[selected_tag])
-            self.rectangles[selected_tag] = self.canvas.create_rectangle(self.start_x,
-                                                                         self.start_y, self.end_x, self.end_y)
-            self.master.rectangle_coordinates[selected_tag] = list(([int(self.start_x), int(self.start_y)],
-                                                                    [int(self.end_x), int(self.end_y)]))
-            self.canvas.delete(self.rect)
-        else:
-            self.canvas.delete(self.rect)
+        if self.rect is not None and self.draw:
+            event, values = show_popup()
+            if event == 'Ok':
+                selected_tag = str(values["LB"][0])
+                if selected_tag in self.rectangles.keys():
+                    self.canvas.delete(self.rectangles[selected_tag])
+                self.rectangles[selected_tag] = self.canvas.create_rectangle(self.start_x,
+                                                                             self.start_y, self.end_x, self.end_y)
+                self.master.rectangle_coordinates[selected_tag] = list(([int(self.start_x), int(self.start_y)],
+                                                                        [int(self.end_x), int(self.end_y)]))
+
+        self.canvas.delete(self.rect)
+        self.draw = False
+        self.rect = None
         print(self.master.rectangle_coordinates)
 
     def delete_rectangle(self, name):
@@ -108,13 +113,15 @@ class ImageViewer(Frame):
     def clear_canvas(self):
         self.canvas.delete("all")
         self.master.rectangle_coordinates.clear()
+        self.master.filename = ""
+        self.master.original_image = None
+        self.master.processed_image = None
+        self.master.is_image_selected = False
 
 
 def show_popup():
     values = ['Name', 'ID', 'Address', 'Phone Number']
-    # popup_window = gui.Window('Choose an option', [[gui.Text('Select tag'), gui.Listbox(values, size=(20, 3), key='LB')],
-    #                                                [gui.Button('Ok'), gui.Button('Cancel')]])
-    # value, event = popup_window.read(close=True)
-    pop_window = commondialog.Dialog()
-    pop_window.show()
+    popup_window = gui.Window('Choose an option', [[gui.Text('Select tag'), gui.Listbox(values, size=(20, 3), key='LB')],
+                                                   [gui.Button('Ok'), gui.Button('Cancel')]])
+    value, event = popup_window.read(close=True)
     return value, event
