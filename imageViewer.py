@@ -44,15 +44,20 @@ class ImageViewer(Frame):
         self.end_y = self.canvas.canvasy(event.y)
         self.draw = True
 
-        w, h = self.canvas.winfo_width(), self.canvas.winfo_height()
-        if event.x > 0.9*w:
-            self.canvas.xview_scroll(1, 'units')
-        elif event.x < 0.1*w:
-            self.canvas.xview_scroll(-1, 'units')
-        if event.y > 0.9*h:
-            self.canvas.yview_scroll(1, 'units')
-        elif event.y < 0.1*h:
-            self.canvas.yview_scroll(-1, 'units')
+        w, h = self.canvas.winfo_width()-1, self.canvas.winfo_height()-1
+        # limit the draggable mouse area to just the image dimensions
+        if event.x < 4:
+            self.end_x = 4
+        elif event.x > w:
+            self.end_x = w
+        else:
+            self.end_x = event.x
+        if event.y < 4:
+            self.end_y = 4
+        elif event.y > h:
+            self.end_y = h
+        else:
+            self.end_y = event.y
 
         # expand rectangle as you drag the mouse if image available in canvas
         if self.master.is_image_selected:
@@ -60,6 +65,8 @@ class ImageViewer(Frame):
 
     def on_button_release(self, event):
         if self.rect is not None and self.draw:
+            # Hide main window here to show pop up on top of the main window
+            # self.
             event, values = show_popup()
             if event == 'Ok':
                 selected_tag = str(values["LB"][0])
@@ -101,7 +108,7 @@ class ImageViewer(Frame):
                 new_height = self.winfo_height()
                 new_width = int(new_height * (width / height))
 
-        # self.shown_image = cv2.resize(image, (new_width, new_height))
+        self.shown_image = cv2.resize(image, (new_width, new_height))
         self.shown_image = image
         self.shown_image = ImageTk.PhotoImage(Image.fromarray(self.shown_image))
 
