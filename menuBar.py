@@ -1,7 +1,7 @@
 from tkinter import Frame, Button, LEFT
 from tkinter import filedialog
 import cv2
-import GetText
+import GetText, FileOperations
 
 
 class MenuBar(Frame):
@@ -36,7 +36,9 @@ class MenuBar(Frame):
                 self.master.is_image_selected = True
 
     def process_button_released(self, event):
-        GetText.process_image(self.master.filename, self.master.rectangle_coordinates)
+        tags_list = GetText.process_image(self.master.filename, self.master.rectangle_coordinates)
+        FileOperations.write_file(tags_list)
+
 
     def clear_button_released(self, event):
         if self.winfo_containing(event.x_root, event.y_root) == self.clear_button:
