@@ -2,6 +2,7 @@ from tkinter import Frame, Canvas, CENTER, ROUND, commondialog, simpledialog, La
 from PIL import Image, ImageTk
 import cv2
 import PySimpleGUI as gui
+import FileOperations
 
 
 class ImageViewer(Frame):
@@ -21,6 +22,8 @@ class ImageViewer(Frame):
         self.start_y = None
         self.end_x = None
         self.end_y = None
+        self.image_width = None
+        self.image_height = None
 
         self.canvas = Canvas(self, bg="gray", width=600, height=400)
         self.canvas.place(relx=0.5, rely=0.5, anchor=CENTER)
@@ -67,8 +70,8 @@ class ImageViewer(Frame):
         if self.rect is not None and self.draw:
             # Hide main window here to show pop up on top of the main window
             # self.
-            event, values = show_popup()
-            if event == 'Ok':
+            event, values = select_tag()
+            if event == 'OK':
                 selected_tag = str(values["LB"][0])
                 if selected_tag in self.rectangles.keys():
                     self.canvas.delete(self.rectangles[selected_tag])
@@ -115,6 +118,8 @@ class ImageViewer(Frame):
         self.ratio = height / new_height
 
         self.canvas.config(width=new_width, height=new_height)
+        self.image_width = new_width
+        self.image_height = new_height
         self.canvas.create_image(new_width / 2, new_height / 2, anchor=CENTER, image=self.shown_image)
 
     def clear_canvas(self):
@@ -122,10 +127,47 @@ class ImageViewer(Frame):
         self.master.rectangle_coordinates.clear()
         self.master.is_image_selected = False
 
+    def save_template(self):
+        value, event = enter_template()
+        print(value)
+        template_name = value[0]
+        if event == 'OK' and template_name is not None:
+            print("Temp name: ", template_name)
+            # template_dictionary = dict()
+            template_dictionary = FileOperations.read_templates()
+            template_dictionary[template_name] = [(self.image_height, self.image_width),
+                                                  self.master.rectangle_coordinates]
+            FileOperations.write_templates(template_dictionary)
+            print("Templates available: ", template_dictionary)
 
-def show_popup():
+    def bulk_process(self):
+        pass
+        # show window with dropdown to select a template and select a image path
+        # get files in the given path and filter for valid ones and store in a list
+        # inside a loop for all files in th list, resize the image for size in the template,
+        # get text for coordinates specified in template
+        # and save text in same file
+
+
+def select_tag():
+    gui.theme('SandyBeach')
     values = ['Name', 'ID', 'Address', 'Phone Number']
-    popup_window = gui.Window('Choose an option', [[gui.Text('Select tag'), gui.Listbox(values, size=(20, 3), key='LB')],
-                                                   [gui.Button('Ok'), gui.Button('Cancel')]])
+    layout = [[gui.Text('Select tag'), gui.Listbox(values, size=(15, 3), key='LB')],
+              [gui.Button('OK'), gui.Button('Cancel')]]
+    popup_window = gui.Window('Choose an option', layout)
     value, event = popup_window.read(close=True)
     return value, event
+
+
+def enter_template():
+    gui.theme('SandyBeach')
+    layout = [
+        [gui.Text('Please enter the name of the template')],
+        [gui.Text('Name', size=(15, 1)), gui.InputText()],
+        [gui.Button('OK'), gui.Cancel()]
+    ]
+    window = gui.Window('Enter Template Name', layout)
+    event, value = window.read(close=True)
+    return value, event
+
+

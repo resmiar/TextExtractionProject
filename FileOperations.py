@@ -1,4 +1,5 @@
 import xlsxwriter
+import pickle
 
 
 def write_file(tags_list):
@@ -18,4 +19,18 @@ def write_file(tags_list):
         col += 1
 
     workbook.close()
+
+
+def read_templates():
+    with open('templates.txt', 'rb') as handle:
+        templates_dict = pickle.loads(handle.read())
+        return templates_dict
+
+
+def write_templates(templates_dict):
+    with open('templates.txt', 'wb') as handle:
+        pickle.dump(templates_dict, handle)
+
+
+
 

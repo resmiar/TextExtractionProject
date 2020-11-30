@@ -12,14 +12,20 @@ class MenuBar(Frame):
         self.new_button = Button(self, text="New")
         self.process_button = Button(self, text="Process")
         self.clear_button = Button(self, text="Clear")
+        self.template_button = Button(self, text="Add Template")
+        self.bulk_button = Button(self, text="Bulk Process")
 
         self.new_button.bind("<ButtonRelease>", self.new_button_released)
         self.process_button.bind("<ButtonRelease>", self.process_button_released)
         self.clear_button.bind("<ButtonRelease>", self.clear_button_released)
+        self.template_button.bind("<ButtonRelease>", self.template_button_released)
+        self.bulk_button.bind("<ButtonRelease>", self.bulk_button_released)
 
         self.new_button.pack(side=LEFT)
         self.process_button.pack(side=LEFT)
-        self.clear_button.pack()
+        self.clear_button.pack(side=LEFT)
+        self.template_button.pack(side=LEFT)
+        self.bulk_button.pack(side=LEFT)
 
     def new_button_released(self, event):
         self.master.image_viewer.clear_canvas()
@@ -39,8 +45,14 @@ class MenuBar(Frame):
         tags_list = GetText.process_image(self.master.filename, self.master.rectangle_coordinates)
         FileOperations.write_file(tags_list)
 
-
     def clear_button_released(self, event):
         if self.winfo_containing(event.x_root, event.y_root) == self.clear_button:
             self.master.image_viewer.clear_canvas()
 
+    def template_button_released(self, event):
+        if self.winfo_containing(event.x_root, event.y_root) == self.template_button:
+            self.master.image_viewer.save_template()
+
+    def bulk_button_released(self, event):
+        if self.winfo_containing(event.x_root, event.y_root) == self.bulk_button:
+            self.master.image_viewer.clear_canvas()
