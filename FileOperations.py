@@ -32,5 +32,5 @@ def write_templates(templates_dict):
         pickle.dump(templates_dict, handle)
 
 
-
-
+def write_bulk(tags, values):
+    return None

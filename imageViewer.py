@@ -70,7 +70,7 @@ class ImageViewer(Frame):
         if self.rect is not None and self.draw:
             # Hide main window here to show pop up on top of the main window
             # self.
-            event, values = select_tag()
+            values, event = select_tag()
             if event == 'OK':
                 selected_tag = str(values["LB"][0])
                 if selected_tag in self.rectangles.keys():
@@ -133,41 +133,50 @@ class ImageViewer(Frame):
         template_name = value[0]
         if event == 'OK' and template_name is not None:
             print("Temp name: ", template_name)
-            # template_dictionary = dict()
-            template_dictionary = FileOperations.read_templates()
+            template_dictionary = dict()
+            # template_dictionary = FileOperations.read_templates()
             template_dictionary[template_name] = [(self.image_height, self.image_width),
                                                   self.master.rectangle_coordinates]
             FileOperations.write_templates(template_dictionary)
             print("Templates available: ", template_dictionary)
 
-    def bulk_process(self):
-        pass
-        # show window with dropdown to select a template and select a image path
-        # get files in the given path and filter for valid ones and store in a list
-        # inside a loop for all files in th list, resize the image for size in the template,
-        # get text for coordinates specified in template
-        # and save text in same file
+    def get_bulk_process_data(self):
+        template_dictionary = FileOperations.read_templates()
+        template_names = list(template_dictionary.keys())
+        value, event = select_template(template_names)
+        template_name = value['LB']
+        path = value['Choose']
+        if event == 'OK' and template_name is not None:
+            return template_dictionary[template_name], path
 
 
 def select_tag():
-    gui.theme('SandyBeach')
+    gui.theme('DarkBlue3')
     values = ['Name', 'ID', 'Address', 'Phone Number']
     layout = [[gui.Text('Select tag'), gui.Listbox(values, size=(15, 3), key='LB')],
               [gui.Button('OK'), gui.Button('Cancel')]]
-    popup_window = gui.Window('Choose an option', layout)
+    popup_window = gui.Window('Choose an option', layout, modal=True)
     value, event = popup_window.read(close=True)
-    return value, event
+    return event, value
 
 
 def enter_template():
-    gui.theme('SandyBeach')
+    gui.theme('DarkBlue3')
     layout = [
         [gui.Text('Please enter the name of the template')],
         [gui.Text('Name', size=(15, 1)), gui.InputText()],
         [gui.Button('OK'), gui.Cancel()]
     ]
-    window = gui.Window('Enter Template Name', layout)
-    event, value = window.read(close=True)
+    window = gui.Window('Enter Template Name', layout, modal=True)
+    value, event = window.read(close=True)
     return value, event
 
 
+def select_template(template_names):
+    gui.theme('DarkBlue3')
+    layout = [[gui.Text('Select a template'), gui.Combo(template_names, size=(15, 3), key='LB')],
+              [gui.Text('Select folder', size=(15, 1)), gui.FolderBrowse('Choose')],
+              [gui.Button('OK'), gui.Button('Cancel')]]
+    popup_window = gui.Window('Choose an option', layout, modal=True)
+    event, value = popup_window.read(close=True)
+    return value, event
