@@ -1,9 +1,12 @@
+import os
 import pytesseract
 import cv2
 
 
-def get_text(image_path, coordinates):
+def get_text(image_path, coordinates, resize=None):
     image = cv2.imread(image_path)
+    # if resize is not None:
+    #     image = cv2.
 
     # cropping image img = image[y0:y1, x0:x1]
     #add code to fix error if end_x or end_y greater than start_x or y
@@ -41,7 +44,7 @@ def get_text(image_path, coordinates):
     return text
 
 
-def process_image(image_path, selection_set):
+def process_image(image_path, selection_set, resize=None):
     tags_list = dict()
 
     for selection in selection_set.keys():
@@ -54,21 +57,35 @@ def process_image(image_path, selection_set):
     return tags_list
 
 
-def process_bulk(template, image_path):
-    # Get list of files in the given path
-
-    # Filter out the invalid ones
+def process_bulk(template, directory_name):
+    # Getting list of images in the given path
+    images = load_images_from_folder(directory_name)
 
     # Get template details
     print("Inside process bulk. Template is: ", template)
     image_size = template[0]
     attributes = list(template[1].keys())
-    attribute_values = {'file1': ['text', 'text', 'text'], 'file2': ['text', 'text', 'text']}
+    attribute_values = dict()
 
     # For each file in list, call process image with image resizing
-
+    for image in images:
+        image_path = directory_name + '//'+image
+        tags_list = process_image(image_path, template[1], resize=image_size)
+        print(tags_list)
+        attribute_values[image] = list(tags_list.values())
+        print(attribute_values)
 
     return attributes, attribute_values
+
+
+def load_images_from_folder(folder):
+    images = []
+    for filename in os.listdir(folder):
+        img = cv2.imread(os.path.join(folder,filename))
+        if img is not None:
+            images.append(filename)
+            # images.append(img)
+    return images
 
 
 if __name__=='__main__':

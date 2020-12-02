@@ -1,4 +1,4 @@
-from tkinter import Frame, Canvas, CENTER, ROUND, commondialog, simpledialog, Label, Listbox, Button
+from tkinter import Frame, Canvas, CENTER
 from PIL import Image, ImageTk
 import cv2
 import PySimpleGUI as gui
@@ -72,7 +72,7 @@ class ImageViewer(Frame):
             # self.
             values, event = select_tag()
             if event == 'OK':
-                selected_tag = str(values["LB"][0])
+                selected_tag = str(values["TG"][0])
                 if selected_tag in self.rectangles.keys():
                     self.canvas.delete(self.rectangles[selected_tag])
                 self.rectangles[selected_tag] = self.canvas.create_rectangle(self.start_x,
@@ -128,13 +128,13 @@ class ImageViewer(Frame):
         self.master.is_image_selected = False
 
     def save_template(self):
-        value, event = enter_template()
+        event, value = enter_template()
         print(value)
         template_name = value[0]
         if event == 'OK' and template_name is not None:
             print("Temp name: ", template_name)
-            template_dictionary = dict()
-            # template_dictionary = FileOperations.read_templates()
+            # template_dictionary = dict()
+            template_dictionary = FileOperations.read_templates()
             template_dictionary[template_name] = [(self.image_height, self.image_width),
                                                   self.master.rectangle_coordinates]
             FileOperations.write_templates(template_dictionary)
@@ -144,16 +144,20 @@ class ImageViewer(Frame):
         template_dictionary = FileOperations.read_templates()
         template_names = list(template_dictionary.keys())
         value, event = select_template(template_names)
-        template_name = value['LB']
-        path = value['Choose']
-        if event == 'OK' and template_name is not None:
-            return template_dictionary[template_name], path
+        template = None
+        path = None
+        if event == 'OK' and value['LB'] is not None:
+            template_name = value['LB']
+            path = value['Choose']
+            template = template_dictionary[template_name]
+            print('template: {}, image_path: {}'.format(template_name, path))
+        return template, path
 
 
 def select_tag():
     gui.theme('DarkBlue3')
     values = ['Name', 'ID', 'Address', 'Phone Number']
-    layout = [[gui.Text('Select tag'), gui.Listbox(values, size=(15, 3), key='LB')],
+    layout = [[gui.Text('Select tag'), gui.Listbox(values, size=(15, 3), key='TG')],
               [gui.Button('OK'), gui.Button('Cancel')]]
     popup_window = gui.Window('Choose an option', layout, modal=True)
     value, event = popup_window.read(close=True)
@@ -174,8 +178,8 @@ def enter_template():
 
 def select_template(template_names):
     gui.theme('DarkBlue3')
-    layout = [[gui.Text('Select a template'), gui.Combo(template_names, size=(15, 3), key='LB')],
-              [gui.Text('Select folder', size=(15, 1)), gui.FolderBrowse('Choose')],
+    layout = [[gui.Text('Select a template'), gui.Combo(template_names, size=(15, 20), key='LB')],
+              [gui.Text('Select folder', size=(30, 1)), gui.FolderBrowse('Choose')],
               [gui.Button('OK'), gui.Button('Cancel')]]
     popup_window = gui.Window('Choose an option', layout, modal=True)
     event, value = popup_window.read(close=True)

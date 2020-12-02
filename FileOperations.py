@@ -24,12 +24,14 @@ def write_file(tags_list):
 def read_templates():
     with open('templates.txt', 'rb') as handle:
         templates_dict = pickle.loads(handle.read())
+        print('Read: ', templates_dict)
         return templates_dict
 
 
 def write_templates(templates_dict):
     with open('templates.txt', 'wb') as handle:
         pickle.dump(templates_dict, handle)
+        print('write: ', templates_dict)
 
 
 def write_bulk(tags, values):

@@ -79,5 +79,7 @@ class MenuBar(Frame):
     def bulk_button_released(self, event):
         if self.winfo_containing(event.x_root, event.y_root) == self.bulk_button:
             template, image_path = self.master.image_viewer.get_bulk_process_data()
-            tags, values = GetText.process_bulk(template, image_path)
-            FileOperations.write_bulk(tags, values)
+            print('template: {}, image_path: {}'.format(template, image_path))
+            if (template and image_path) is not None:
+                tags, values = GetText.process_bulk(template, image_path)
+                FileOperations.write_bulk(tags, values)
