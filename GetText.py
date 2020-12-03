@@ -1,15 +1,16 @@
 import os
 import pytesseract
 import cv2
+from pytesseract import TesseractNotFoundError
 
 
 def get_text(image_path, coordinates, resize=None):
     image = cv2.imread(image_path)
-    # if resize is not None:
-    #     image = cv2.
+    print('resize is {}'.format(resize))
+    if resize is not None:
+        image = cv2.resize(image,resize)
 
     # cropping image img = image[y0:y1, x0:x1]
-    #add code to fix error if end_x or end_y greater than start_x or y
     if coordinates[0][1] > coordinates[1][1]:
         y0 = coordinates[1][1]
         y1 = coordinates[0][1]
@@ -24,7 +25,6 @@ def get_text(image_path, coordinates, resize=None):
         x1 = coordinates[1][0]
 
     image_ROI = image[y0:y1, x0:x1]
-    # image_ROI = image[coordinates[0][1]:coordinates[1][1], coordinates[0][0]:coordinates[1][0]]
 
     # # pre-processing the image
     gray = cv2.cvtColor(image_ROI, cv2.COLOR_BGR2GRAY)
@@ -39,9 +39,12 @@ def get_text(image_path, coordinates, resize=None):
     # cv2.waitKey(0)
 
     # Perform text extraction
-    text = pytesseract.image_to_string(thresh, lang='eng', config='--psm 6')
-    # print(text)
-    return text
+    text = ''
+    try:
+        text = pytesseract.image_to_string(thresh, lang='eng', config='--psm 6')
+    except TesseractNotFoundError:
+        print("Tesseract is not installed or not set in environment path variable")
+    return text.strip()
 
 
 def process_image(image_path, selection_set, resize=None):
@@ -50,7 +53,7 @@ def process_image(image_path, selection_set, resize=None):
     for selection in selection_set.keys():
         coordinates = selection_set[selection]
         print("coordinates for ", selection, " is ", coordinates)
-        text = get_text(image_path, coordinates)
+        text = get_text(image_path, coordinates, resize=resize)
         tags_list[selection] = text
 
     print("tags list is:", tags_list)
@@ -63,7 +66,7 @@ def process_bulk(template, directory_name):
 
     # Get template details
     print("Inside process bulk. Template is: ", template)
-    image_size = template[0]
+    image_size = tuple(template[0])
     attributes = list(template[1].keys())
     attribute_values = dict()
 
@@ -71,6 +74,7 @@ def process_bulk(template, directory_name):
     for image in images:
         image_path = directory_name + '//'+image
         tags_list = process_image(image_path, template[1], resize=image_size)
+        print('image size is {}'.format(image_size))
         print(tags_list)
         attribute_values[image] = list(tags_list.values())
         print(attribute_values)
@@ -84,13 +88,10 @@ def load_images_from_folder(folder):
         img = cv2.imread(os.path.join(folder,filename))
         if img is not None:
             images.append(filename)
-            # images.append(img)
     return images
 
 
-if __name__=='__main__':
-    # process_image('ocr_example_2.jpeg', {'Name': [[662, 381], [538, 410]]})
-
-    process_image('ocr_example_2.jpeg', {'Name': [[538, 381], [662, 410]]})
+# if __name__ == '__main__':
+#     process_image('ocr_example_2.jpeg', {'Name': [[495, 235], [314, 200]]})
 
 

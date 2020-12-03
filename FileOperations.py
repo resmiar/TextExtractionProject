@@ -23,7 +23,11 @@ def write_file(tags_list):
 
 def read_templates():
     with open('templates.txt', 'rb') as handle:
-        templates_dict = pickle.loads(handle.read())
+        templates_dict = dict()
+        try:
+            templates_dict = pickle.loads(handle.read())
+        except EOFError as e:
+            print("File is empty")
         print('Read: ', templates_dict)
         return templates_dict
 

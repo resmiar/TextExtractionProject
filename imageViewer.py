@@ -1,3 +1,4 @@
+import os
 from tkinter import Frame, Canvas, CENTER
 from PIL import Image, ImageTk
 import cv2
@@ -141,16 +142,20 @@ class ImageViewer(Frame):
             print("Templates available: ", template_dictionary)
 
     def get_bulk_process_data(self):
-        template_dictionary = FileOperations.read_templates()
-        template_names = list(template_dictionary.keys())
-        value, event = select_template(template_names)
         template = None
-        path = None
-        if event == 'OK' and value['LB'] is not None:
-            template_name = value['LB']
-            path = value['Choose']
-            template = template_dictionary[template_name]
-            print('template: {}, image_path: {}'.format(template_name, path))
+        path = os.getcwd()
+        template_dictionary = FileOperations.read_templates()
+        if template_dictionary.keys():
+            template_names = list(template_dictionary.keys())
+            value, event = select_template(template_names)
+            if event == 'OK':
+                template_name = value['TP']
+                if value['Choose'] != '':
+                    path = value['Choose']
+                print('template: {}, image_path: {}'.format(template_name, path))
+                template = template_dictionary[template_name]
+        else:
+            show_message('You have no saved templates.\n Please save a template before doing bulk processing')
         return template, path
 
 
@@ -178,9 +183,16 @@ def enter_template():
 
 def select_template(template_names):
     gui.theme('DarkBlue3')
-    layout = [[gui.Text('Select a template'), gui.Combo(template_names, size=(15, 20), key='LB')],
+    layout = [[gui.Text('Select a template'), gui.Combo(template_names, size=(15, 20), key='TP',
+                                                        default_value=template_names[0])],
               [gui.Text('Select folder', size=(30, 1)), gui.FolderBrowse('Choose')],
               [gui.Button('OK'), gui.Button('Cancel')]]
     popup_window = gui.Window('Choose an option', layout, modal=True)
     event, value = popup_window.read(close=True)
     return value, event
+
+
+def show_message(message):
+    gui.theme('DarkBlue3')
+    gui.popup('Message:', message, keep_on_top=True)
+
