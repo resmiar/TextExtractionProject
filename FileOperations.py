@@ -1,3 +1,4 @@
+import openpyxl
 import xlsxwriter
 import pickle
 
@@ -38,5 +39,26 @@ def write_templates(templates_dict):
         print('write: ', templates_dict)
 
 
-def write_bulk(tags, values):
-    return None
+def write_bulk(tags, valueTag):
+    # Creating work book
+    wb = openpyxl.Workbook()
+    sheet = wb.active
+
+    # Iterating tag list for header rows
+    for index, key in enumerate(tags):
+        sheet.cell(row=1, column=index+2).value = key
+        print("headerValue:"+key)
+
+    file_names = list(valueTag.keys())
+    # Iterating dictionary for tag values
+    for i, x in enumerate(valueTag.values()):
+        file_name = file_names[i]
+        print("Value of x:"+str(x))
+        print('Filename is {}'.format(file_name))
+        sheet.cell(row=i+2, column=1).value = file_name
+        for idx,value in enumerate(x):
+            sheet.cell(row=i+2, column=idx+2).value = value
+            print("Value:"+value)
+
+    # Saving workbook
+    wb.save('tag.xlsx')

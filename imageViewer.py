@@ -129,17 +129,17 @@ class ImageViewer(Frame):
         self.master.is_image_selected = False
 
     def save_template(self):
-        event, value = enter_template()
-        print(value)
-        template_name = value[0]
-        if event == 'OK' and template_name is not None:
-            print("Temp name: ", template_name)
-            # template_dictionary = dict()
-            template_dictionary = FileOperations.read_templates()
-            template_dictionary[template_name] = [(self.image_height, self.image_width),
-                                                  self.master.rectangle_coordinates]
-            FileOperations.write_templates(template_dictionary)
-            print("Templates available: ", template_dictionary)
+        if self.master.is_image_selected:
+            event, value = enter_template()
+            print(value)
+            template_name = value[0]
+            if event == 'OK' and template_name is not None:
+                print("Temp name: ", template_name)
+                template_dictionary = FileOperations.read_templates()
+                template_dictionary[template_name] = [(self.image_width, self.image_height),
+                                                      self.master.rectangle_coordinates]
+                FileOperations.write_templates(template_dictionary)
+                print("Templates available: ", template_dictionary)
 
     def get_bulk_process_data(self):
         template = None
